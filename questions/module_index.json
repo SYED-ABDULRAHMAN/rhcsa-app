@@ -1,0 +1,79 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2025-10-16",
+  "description": "RHCSA Practice Lab - Module Index",
+  "modules": [
+    {
+      "id": "module1",
+      "name": "User Management",
+      "description": "Creating and managing users, groups, and permissions",
+      "order": 1,
+      "file": "module1_users.json",
+      "icon": "👥",
+      "enabled": true
+    },
+    {
+      "id": "module2",
+      "name": "File Management",
+      "description": "Working with files, directories, and permissions",
+      "order": 2,
+      "file": "module2_files.json",
+      "icon": "📁",
+      "enabled": false
+    },
+    {
+      "id": "module3",
+      "name": "Filesystems",
+      "description": "Managing partitions, filesystems, and mounting",
+      "order": 3,
+      "file": "module3_filesystems.json",
+      "icon": "💾",
+      "enabled": false
+    },
+    {
+      "id": "module4",
+      "name": "Service Management",
+      "description": "Managing systemd services and daemons",
+      "order": 4,
+      "file": "module4_services.json",
+      "icon": "⚙️",
+      "enabled": false
+    },
+    {
+      "id": "module5",
+      "name": "Networking",
+      "description": "Configuring network interfaces and troubleshooting",
+      "order": 5,
+      "file": "module5_networking.json",
+      "icon": "🌐",
+      "enabled": false
+    },
+    {
+      "id": "module6",
+      "name": "Security",
+      "description": "SELinux, firewall, and security policies",
+      "order": 6,
+      "file": "module6_security.json",
+      "icon": "🔒",
+      "enabled": false
+    },
+    {
+      "id": "module7",
+      "name": "Process Management",
+      "description": "Managing processes, jobs, and system resources",
+      "order": 7,
+      "file": "module7_processes.json",
+      "icon": "⚡",
+      "enabled": false
+    },
+    {
+      "id": "module8",
+      "name": "Package Management",
+      "description": "Installing and managing RPM packages with dnf/yum",
+      "order": 8,
+      "file": "module8_packages.json",
+      "icon": "📦",
+      "enabled": false
+    }
+  ]
+}

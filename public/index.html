@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RHEL User Lab - RHCSA Practice</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.1.0/css/xterm.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.1.0/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.7.0/lib/xterm-addon-fit.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .container { max-width: 1600px; margin: 0 auto; background: white; min-height: 100vh; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%); color: white; padding: 20px 30px; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .header h1 { font-size: 1.8em; }
+        .progress-info { display: flex; gap: 20px; align-items: center; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 0.9em; }
+        .question-nav { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .question-btn { background: rgba(255,255,255,0.3); color: white; border: 2px solid rgba(255,255,255,0.5); padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: all 0.3s; font-weight: bold; min-width: 60px; }
+        .question-btn:hover { background: rgba(255,255,255,0.4); transform: translateY(-2px); }
+        .question-btn.active { background: white; color: #ee0979; border-color: white; }
+        .question-btn.completed { background: #00ff00; color: #000; border-color: #00ff00; }
+        .question-btn.skipped { background: #ffbb00; color: #000; border-color: #ffbb00; }
+        .question-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .content { display: grid; grid-template-columns: 450px 1fr; height: calc(100vh - 140px); }
+        .question-panel { background: #f8f9fa; padding: 30px; border-right: 2px solid #e0e0e0; overflow-y: auto; }
+        .terminal-panel { background: #000; padding: 20px; display: flex; flex-direction: column; }
+        .question-header { margin-bottom: 20px; }
+        .question-title { color: #333; font-size: 1.4em; margin-bottom: 10px; }
+        .question-meta { display: flex; gap: 15px; font-size: 0.9em; color: #666; flex-wrap: wrap; }
+        .difficulty { background: #fff3cd; padding: 4px 12px; border-radius: 12px; color: #856404; }
+        .question-body { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ee0979; }
+        .question-body p { color: #555; line-height: 1.6; margin-bottom: 15px; }
+        .requirements { background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 15px; margin-top: 15px; }
+        .requirements h3 { color: #856404; font-size: 1.1em; margin-bottom: 10px; }
+        .requirement-item { display: flex; align-items: center; gap: 10px; margin: 8px 0; color: #856404; }
+        .requirement-item.checked { color: #155724; background: #d4edda; padding: 5px; border-radius: 4px; }
+        .requirement-item.failed { color: #721c24; background: #f8d7da; padding: 5px; border-radius: 4px; }
+        .hint-section, .solution-section { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; padding: 15px; border-radius: 6px; margin-top: 15px; }
+        .solution-section { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .hint-section h4, .solution-section h4 { margin-bottom: 10px; cursor: pointer; user-select: none; }
+        .hint-content, .solution-content { display: none; margin-top: 10px; line-height: 1.6; }
+        .hint-content.show, .solution-content.show { display: block; }
+        .solution-content code { background: #fff; padding: 2px 6px; border-radius: 3px; font-family: 'Courier New', monospace; display: block; margin: 5px 0; }
+        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .action-buttons button { padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.3s; font-size: 14px; }
+        .btn-check { background: #007bff; color: white; grid-column: span 2; padding: 15px; font-size: 16px; }
+        .btn-check:hover { background: #0056b3; transform: translateY(-2px); }
+        .btn-skip { background: #ffc107; color: #000; }
+        .btn-skip:hover { background: #e0a800; }
+        .btn-reset { background: #6c757d; color: white; }
+        .btn-reset:hover { background: #545b62; }
+        .btn-prev { background: #6c757d; color: white; }
+        .btn-prev:hover { background: #545b62; }
+        .btn-next { background: #28a745; color: white; }
+        .btn-next:hover { background: #218838; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 6px; display: none; }
+        .result.show { display: block; }
+        .result.success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .result.partial { background: #fff3cd; border: 1px solid #ffc107; color: #856404; }
+        .result.error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .terminal-container { flex: 1; background: #000; border-radius: 8px; padding: 10px; overflow: hidden; }
+        #terminal { height: 100%; width: 100%; }
+        .connection-status { padding: 10px; text-align: center; font-size: 0.9em; margin-top: 10px; border-radius: 6px; }
+        .connection-status.connected { background: #d4edda; color: #155724; }
+        .connection-status.disconnected { background: #f8d7da; color: #721c24; }
+        .loading { display: none; text-align: center; padding: 10px; color: #666; }
+        .loading.show { display: block; }
+        @media (max-width: 1200px) {
+            .content { grid-template-columns: 1fr; height: auto; }
+            .question-panel { border-right: none; border-bottom: 2px solid #e0e0e0; max-height: 50vh; }
+            .terminal-panel { min-height: 50vh; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <h1>🧪 RHEL User Lab - RHCSA Practice</h1>
+                <div class="progress-info">
+                    <span id="progressText">Loading...</span>
+                    <span id="scoreText">Score: 0/0</span>
+                </div>
+            </div>
+            <div class="question-nav" id="questionNav"></div>
+        </div>
+        
+        <div class="content">
+            <div class="question-panel">
+                <div class="question-header">
+                    <h2 class="question-title" id="questionTitle">Loading...</h2>
+                    <div class="question-meta">
+                        <span class="difficulty" id="questionDifficulty">⭐</span>
+                        <span id="questionCategory">Category</span>
+                        <span id="questionNumber">Question 1/?</span>
+                    </div>
+                </div>
+                
+                <div class="question-body">
+                    <p id="questionDescription">Loading question...</p>
+                    <div class="requirements">
+                        <h3>📋 Requirements:</h3>
+                        <div id="requirementsList"></div>
+                    </div>
+                </div>
+                
+                <div class="hint-section">
+                    <h4 onclick="toggleHints()">💡 Hints <span id="hintToggle">[Show]</span></h4>
+                    <div class="hint-content" id="hintContent"></div>
+                </div>
+                
+                <div class="solution-section">
+                    <h4 onclick="toggleSolution()">📖 Solution <span id="solutionToggle">[Show]</span></h4>
+                    <div class="solution-content" id="solutionContent"></div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn-check" id="checkBtn" onclick="checkAnswer()">🔍 Check Answer</button>
+                    <button class="btn-prev" id="prevBtn" onclick="prevQuestion()">← Previous</button>
+                    <button class="btn-next" id="nextBtn" onclick="nextQuestion()">Next →</button>
+                    <button class="btn-skip" onclick="skipQuestion()">⭐️ Skip</button>
+                    <button class="btn-reset" onclick="resetCurrentQuestion()">🔄 Reset</button>
+                </div>
+                
+                <div class="loading" id="loading">⏳ Checking...</div>
+                <div id="result" class="result"></div>
+                <div class="connection-status" id="connectionStatus"></div>
+            </div>
+            
+            <div class="terminal-panel">
+                <div class="terminal-container">
+                    <div id="terminal"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allQuestions = [];
+        let currentQuestionIndex = 0;
+        let questionStates = [];
+        let term, socket, fitAddon;
+        let isConnected = false;
+        const API_URL = window.location.origin;
+        const WS_URL = API_URL.replace('http', 'ws');
+
+        // Initialize application
+        window.onload = async function() {
+            await loadQuestionsFromAPI();
+            initializeState();
+            renderQuestionNav();
+            loadQuestion(currentQuestionIndex);
+            initTerminal();
+        };
+
+        // Load questions from API
+        async function loadQuestionsFromAPI() {
+            try {
+                const response = await fetch(`${API_URL}/api/questions`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    allQuestions = data.questions;
+                    console.log(`✅ Loaded ${allQuestions.length} questions from server`);
+                } else {
+                    console.error('Failed to load questions');
+                    allQuestions = [];
+                }
+            } catch (error) {
+                console.error('Error loading questions:', error);
+                alert('Failed to load questions from server. Please check if the server is running.');
+            }
+        }
+
+        // Initialize question states from localStorage
+        function initializeState() {
+            const saved = localStorage.getItem('rhel_lab_progress');
+            if (saved) {
+                const savedStates = JSON.parse(saved);
+                // Merge with current questions (in case questions changed)
+                questionStates = allQuestions.map(q => {
+                    const savedState = savedStates.find(s => s.id === q.question_id);
+                    return savedState || {
+                        id: q.question_id,
+                        status: 'incomplete',
+                        score: 0,
+                        maxScore: q.points
+                    };
+                });
+            } else {
+                questionStates = allQuestions.map(q => ({
+                    id: q.question_id,
+                    status: 'incomplete',
+                    score: 0,
+                    maxScore: q.points
+                }));
+            }
+            saveState();
+        }
+
+        // Save state to localStorage
+        function saveState() {
+            localStorage.setItem('rhel_lab_progress', JSON.stringify(questionStates));
+        }
+
+        // Render question navigation buttons
+        function renderQuestionNav() {
+            const nav = document.getElementById('questionNav');
+            nav.innerHTML = '';
+            
+            allQuestions.forEach((q, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'question-btn';
+                btn.textContent = q.question_id;
+                btn.onclick = () => loadQuestion(index);
+                
+                const state = questionStates[index];
+                if (state && state.status === 'completed') {
+                    btn.classList.add('completed');
+                    btn.innerHTML = `${q.question_id} ✓`;
+                } else if (state && state.status === 'skipped') {
+                    btn.classList.add('skipped');
+                    btn.innerHTML = `${q.question_id} ⭐`;
+                }
+                
+                if (index === currentQuestionIndex) {
+                    btn.classList.add('active');
+                }
+                
+                nav.appendChild(btn);
+            });
+            
+            updateProgress();
+        }
+
+        // Load a specific question
+        function loadQuestion(index) {
+            if (index < 0 || index >= allQuestions.length) return;
+            
+            currentQuestionIndex = index;
+            const q = allQuestions[index];
+            
+            document.getElementById('questionTitle').textContent = q.title;
+            document.getElementById('questionDifficulty').textContent = q.difficulty_stars;
+            document.getElementById('questionCategory').textContent = q.category;
+            document.getElementById('questionNumber').textContent = `Question ${index + 1}/${allQuestions.length}`;
+            document.getElementById('questionDescription').textContent = q.description;
+            
+            // Render requirements
+            const reqList = document.getElementById('requirementsList');
+            reqList.innerHTML = '';
+            q.requirements.forEach(req => {
+                const div = document.createElement('div');
+                div.className = 'requirement-item';
+                div.innerHTML = `<span>☐</span> <span>${req.text}</span>`;
+                reqList.appendChild(div);
+            });
+            
+            // Render hints
+            document.getElementById('hintContent').innerHTML = q.hints.map(h => `• ${h}<br>`).join('');
+            
+            // Render solution
+            document.getElementById('solutionContent').innerHTML = q.solution_steps.map(s => `<code>${s}</code>`).join('');
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = index === 0;
+            document.getElementById('nextBtn').disabled = index === allQuestions.length - 1;
+            
+            // Hide result
+            document.getElementById('result').classList.remove('show');
+            
+            // Reset hint/solution visibility
+            document.getElementById('hintContent').classList.remove('show');
+            document.getElementById('solutionContent').classList.remove('show');
+            document.getElementById('hintToggle').textContent = '[Show]';
+            document.getElementById('solutionToggle').textContent = '[Show]';
+            
+            renderQuestionNav();
+        }
+
+        // Toggle hints visibility
+        function toggleHints() {
+            const content = document.getElementById('hintContent');
+            const toggle = document.getElementById('hintToggle');
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+                toggle.textContent = '[Show]';
+            } else {
+                content.classList.add('show');
+                toggle.textContent = '[Hide]';
+            }
+        }
+
+        // Toggle solution visibility
+        function toggleSolution() {
+            const content = document.getElementById('solutionContent');
+            const toggle = document.getElementById('solutionToggle');
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+                toggle.textContent = '[Show]';
+            } else {
+                content.classList.add('show');
+                toggle.textContent = '[Hide]';
+            }
+        }
+
+        // Check answer by calling validation API
+        async function checkAnswer() {
+            if (!isConnected) {
+                alert('Not connected to server. Please ensure the backend is running.');
+                return;
+            }
+            
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            
+            loading.classList.add('show');
+            result.classList.remove('show');
+            
+            try {
+                const q = allQuestions[currentQuestionIndex];
+                const response = await fetch(`${API_URL}/api/validate/${q.question_id}`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                loading.classList.remove('show');
+                result.classList.add('show');
+                
+                // Update requirement items with check results
+                const reqItems = document.querySelectorAll('#requirementsList .requirement-item');
+                let correctCount = 0;
+                
+                q.requirements.forEach((req, index) => {
+                    const checkResult = data.checks[req.id];
+                    if (reqItems[index] && checkResult) {
+                        if (checkResult.passed) {
+                            reqItems[index].classList.add('checked');
+                            reqItems[index].classList.remove('failed');
+                            reqItems[index].querySelector('span:first-child').textContent = '✓';
+                            correctCount++;
+                        } else {
+                            reqItems[index].classList.add('failed');
+                            reqItems[index].classList.remove('checked');
+                            reqItems[index].querySelector('span:first-child').textContent = '✗';
+                        }
+                    }
+                });
+                
+                const percentage = data.percentage || 0;
+                
+                // Display result
+                if (data.success) {
+                    result.className = 'result show success';
+                    result.innerHTML = `<strong>🎉 Perfect!</strong><br>All requirements met! (${data.passed}/${data.total})<br><br>`;
+                    Object.entries(data.checks).forEach(([key, check]) => {
+                        result.innerHTML += `<div style="padding:5px;">${check.message}</div>`;
+                    });
+                    result.innerHTML += `<br><strong>Score: +${q.points} points</strong>`;
+                    
+                    questionStates[currentQuestionIndex].status = 'completed';
+                    questionStates[currentQuestionIndex].score = q.points;
+                    saveState();
+                    renderQuestionNav();
+                    
+                } else if (percentage >= 50) {
+                    result.className = 'result show partial';
+                    result.innerHTML = `<strong>⚠️ Partially Correct</strong><br>Progress: ${data.passed}/${data.total} requirements (${percentage}%)<br><br>`;
+                    Object.entries(data.checks).forEach(([key, check]) => {
+                        result.innerHTML += `<div style="padding:5px;">${check.message}</div>`;
+                    });
+                    
+                    // Partial credit
+                    const partialScore = Math.round((q.points * percentage) / 100);
+                    questionStates[currentQuestionIndex].score = partialScore;
+                    saveState();
+                    renderQuestionNav();
+                    
+                } else {
+                    result.className = 'result show error';
+                    result.innerHTML = `<strong>❌ Issues Found</strong><br>Progress: ${data.passed}/${data.total} requirements (${percentage}%)<br><br>`;
+                    Object.entries(data.checks).forEach(([key, check]) => {
+                        result.innerHTML += `<div style="padding:5px;">${check.message}</div>`;
+                    });
+                }
+                
+            } catch (error) {
+                loading.classList.remove('show');
+                result.className = 'result show error';
+                result.classList.add('show');
+                result.innerHTML = '<strong>Error:</strong> Cannot connect to server. Make sure the backend is running.';
+                console.error('Validation error:', error);
+            }
+        }
+
+        // Skip current question
+        function skipQuestion() {
+            if (confirm('Skip this question? You can come back to it later.')) {
+                questionStates[currentQuestionIndex].status = 'skipped';
+                saveState();
+                
+                if (currentQuestionIndex < allQuestions.length - 1) {
+                    loadQuestion(currentQuestionIndex + 1);
+                } else {
+                    renderQuestionNav();
+                }
+            }
+        }
+
+        // Navigate to previous question
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                loadQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        // Navigate to next question
+        function nextQuestion() {
+            if (currentQuestionIndex < allQuestions.length - 1) {
+                loadQuestion(currentQuestionIndex + 1);
+            }
+        }
+
+        // Reset current question
+        async function resetCurrentQuestion() {
+            if (!confirm('Reset this question? This will clean up any users/groups you created.')) {
+                return;
+            }
+            
+            try {
+                const q = allQuestions[currentQuestionIndex];
+                const response = await fetch(`${API_URL}/api/reset/${q.question_id}`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (term) {
+                    term.writeln('\r\n\x1b[32m=== Question Reset ===\x1b[0m');
+                    term.writeln(`\x1b[32m${data.output}\x1b[0m\r\n`);
+                }
+                
+                questionStates[currentQuestionIndex].status = 'incomplete';
+                questionStates[currentQuestionIndex].score = 0;
+                saveState();
+                
+                loadQuestion(currentQuestionIndex);
+                
+            } catch (error) {
+                if (term) {
+                    term.writeln('\r\n\x1b[31mError: Cannot connect to server\x1b[0m\r\n');
+                }
+                console.error('Reset error:', error);
+            }
+        }
+
+        // Update progress display
+        function updateProgress() {
+            const completed = questionStates.filter(q => q.status === 'completed').length;
+            const totalScore = questionStates.reduce((sum, q) => sum + q.score, 0);
+            const maxScore = allQuestions.reduce((sum, q) => sum + q.points, 0);
+            
+            document.getElementById('progressText').textContent = `Progress: ${completed}/${allQuestions.length}`;
+            document.getElementById('scoreText').textContent = `Score: ${totalScore}/${maxScore}`;
+        }
+
+        // Initialize terminal
+        function initTerminal() {
+            term = new Terminal({
+                cursorBlink: true,
+                fontSize: 14,
+                fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+                theme: {
+                    background: '#000000',
+                    foreground: '#ffffff',
+                    cursor: '#ffffff'
+                },
+                rows: 24,
+                cols: 80
+            });
+
+            fitAddon = new FitAddon.FitAddon();
+            term.loadAddon(fitAddon);
+            term.open(document.getElementById('terminal'));
+            fitAddon.fit();
+
+            window.addEventListener('resize', () => {
+                fitAddon.fit();
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({
+                        type: 'resize',
+                        cols: term.cols,
+                        rows: term.rows
+                    }));
+                }
+            });
+
+            connectWebSocket();
+        }
+
+        // Connect to WebSocket for terminal
+        function connectWebSocket() {
+            const connectionStatus = document.getElementById('connectionStatus');
+            const checkBtn = document.getElementById('checkBtn');
+
+            term.writeln('\x1b[33m🔄 Connecting to terminal server...\x1b[0m');
+
+            socket = new WebSocket(`${WS_URL}/`);
+
+            socket.onopen = () => {
+                term.writeln('\x1b[32m✓ Connected! You now have a real terminal.\x1b[0m');
+                term.writeln('\x1b[36mType your commands below. Use sudo for privileged operations.\x1b[0m');
+                term.writeln('');
+                
+                isConnected = true;
+                connectionStatus.className = 'connection-status connected';
+                connectionStatus.textContent = '✓ Terminal connected';
+                checkBtn.disabled = false;
+
+                socket.send(JSON.stringify({
+                    type: 'resize',
+                    cols: term.cols,
+                    rows: term.rows
+                }));
+            };
+
+            socket.onmessage = (event) => {
+                try {
+                    const msg = JSON.parse(event.data);
+                    if (msg.type === 'output') {
+                        term.write(msg.data);
+                    } else if (msg.type === 'exit') {
+                        term.writeln('\r\n\x1b[31mTerminal session ended.\x1b[0m');
+                        isConnected = false;
+                    }
+                } catch (e) {
+                    console.error('Error parsing message:', e);
+                }
+            };
+
+            socket.onerror = (error) => {
+                term.writeln('\r\n\x1b[31m✗ Connection error!\x1b[0m');
+                term.writeln('\x1b[31mMake sure the server is running: node server.js\x1b[0m');
+                
+                connectionStatus.className = 'connection-status disconnected';
+                connectionStatus.textContent = '❌ Server not running';
+                isConnected = false;
+                checkBtn.disabled = true;
+            };
+
+            socket.onclose = () => {
+                if (isConnected) {
+                    term.writeln('\r\n\x1b[33m⚠ Disconnected from server.\x1b[0m');
+                    isConnected = false;
+                    connectionStatus.className = 'connection-status disconnected';
+                    connectionStatus.textContent = '❌ Connection lost';
+                    checkBtn.disabled = true;
+                    
+                    setTimeout(() => {
+                        term.writeln('\x1b[33m🔄 Attempting to reconnect...\x1b[0m');
+                        connectWebSocket();
+                    }, 3000);
+                }
+            };
+
+            term.onData((data) => {
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({
+                        type: 'input',
+                        data: data
+                    }));
+                }
+            });
+        }
+    </script>
+</body>
+</html>

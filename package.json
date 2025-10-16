@@ -1,0 +1,19 @@
+{
+  "name": "rhcsa-lab",
+  "version": "1.0.0",
+  "description": "RHCSA Practice Lab with Real Terminal",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["rhel", "linux", "terminal", "education", "rhcsa"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "node-pty": "^1.0.0",
+    "ws": "^8.18.3"
+  }
+}
