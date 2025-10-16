@@ -9,7 +9,9 @@ https://github.com/SYED-ABDULRAHMAN/rhcsa
 chmod +x /opt/rhcsa-app/validation/*.sh
 
 # Install dependencies
-apt install npm
+apt install npm -y
+
+npm install
 
 # Start the server (requires sudo)
 sudo node server.js
