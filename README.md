@@ -18,3 +18,5 @@ sudo node server.js
 # Open browser
 # Navigate to: http://localhost:3000
 ```
+To run as a container
+docker run -d --name rhcsa-lab -p 3000:3000 --privileged --security-opt seccomp=unconfined syedabdulrahman134/rhcsa-lab:latest
