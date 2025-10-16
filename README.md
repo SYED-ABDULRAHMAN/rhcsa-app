@@ -6,7 +6,7 @@ cd /opt
 
 git clone https://github.com/SYED-ABDULRAHMAN/rhcsa-app.git
 chmod +x /opt/rhcsa-app/validation/*.sh
-
+cd rhcsa-app
 # Install dependencies
 apt install npm -y
 
