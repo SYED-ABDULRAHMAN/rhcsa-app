@@ -6,7 +6,7 @@ cd /opt
 
 https://github.com/SYED-ABDULRAHMAN/rhcsa
 -app.git
-cd terminal
+chmod +x /opt/rhcsa-app/validation/*.sh
 
 # Install dependencies
 apt install npm
