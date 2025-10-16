@@ -2,6 +2,8 @@
 
 ```bash
 # Clone the repository
+cd /opt
+
 https://github.com/SYED-ABDULRAHMAN/rhcsa
 -app.git
 cd terminal
