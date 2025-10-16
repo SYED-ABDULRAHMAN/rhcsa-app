@@ -4,8 +4,7 @@
 # Clone the repository
 cd /opt
 
-https://github.com/SYED-ABDULRAHMAN/rhcsa
--app.git
+git clone https://github.com/SYED-ABDULRAHMAN/rhcsa-app.git
 chmod +x /opt/rhcsa-app/validation/*.sh
 
 # Install dependencies
