@@ -1,79 +1,103 @@
 {
-  "version": "1.0.0",
-  "last_updated": "2025-10-16",
-  "description": "RHCSA Practice Lab - Module Index",
+  "version": "2.0.0",
+  "last_updated": "2025-01-16",
+  "description": "RHCSA Practice Lab - Full Exam Simulation (20 Questions)",
   "modules": [
     {
       "id": "module1",
-      "name": "User Management",
-      "description": "Creating and managing users, groups, and permissions",
+      "name": "User & Group Management",
+      "description": "Creating users, managing groups, and password policies",
       "order": 1,
-      "file": "module1_users.json",
+      "file": "module1_users_groups.json",
       "icon": "👥",
-      "enabled": true
+      "enabled": true,
+      "difficulty": "easy",
+      "estimated_time": "30 minutes"
     },
     {
       "id": "module2",
-      "name": "File Management",
-      "description": "Working with files, directories, and permissions",
+      "name": "System Services & Boot",
+      "description": "Managing systemd services, targets, and time synchronization",
       "order": 2,
-      "file": "module2_files.json",
-      "icon": "📁",
-      "enabled": false
+      "file": "module2_services.json",
+      "icon": "⚙️",
+      "enabled": true,
+      "difficulty": "medium",
+      "estimated_time": "20 minutes"
     },
     {
       "id": "module3",
-      "name": "Filesystems",
-      "description": "Managing partitions, filesystems, and mounting",
+      "name": "Storage Management",
+      "description": "Partitions, filesystems, LVM, and swap configuration",
       "order": 3,
-      "file": "module3_filesystems.json",
+      "file": "module3_storage.json",
       "icon": "💾",
-      "enabled": false
+      "enabled": true,
+      "difficulty": "hard",
+      "estimated_time": "60 minutes"
     },
     {
       "id": "module4",
-      "name": "Service Management",
-      "description": "Managing systemd services and daemons",
+      "name": "File Operations & Permissions",
+      "description": "File manipulation, permissions, archiving, and ownership",
       "order": 4,
-      "file": "module4_services.json",
-      "icon": "⚙️",
-      "enabled": false
+      "file": "module4_files.json",
+      "icon": "📁",
+      "enabled": true,
+      "difficulty": "medium",
+      "estimated_time": "30 minutes"
     },
     {
       "id": "module5",
-      "name": "Networking",
-      "description": "Configuring network interfaces and troubleshooting",
+      "name": "SELinux & Security",
+      "description": "SELinux contexts, access control, and security policies",
       "order": 5,
-      "file": "module5_networking.json",
-      "icon": "🌐",
-      "enabled": false
+      "file": "module5_security.json",
+      "icon": "🔒",
+      "enabled": true,
+      "difficulty": "hard",
+      "estimated_time": "30 minutes"
     },
     {
       "id": "module6",
-      "name": "Security",
-      "description": "SELinux, firewall, and security policies",
+      "name": "Networking",
+      "description": "Network configuration, NFS, and firewall management",
       "order": 6,
-      "file": "module6_security.json",
-      "icon": "🔒",
-      "enabled": false
+      "file": "module6_networking.json",
+      "icon": "🌐",
+      "enabled": true,
+      "difficulty": "medium",
+      "estimated_time": "40 minutes"
     },
     {
       "id": "module7",
-      "name": "Process Management",
-      "description": "Managing processes, jobs, and system resources",
+      "name": "Task Automation",
+      "description": "Cron jobs, scheduled tasks, and automation",
       "order": 7,
-      "file": "module7_processes.json",
-      "icon": "⚡",
-      "enabled": false
-    },
-    {
-      "id": "module8",
-      "name": "Package Management",
-      "description": "Installing and managing RPM packages with dnf/yum",
-      "order": 8,
-      "file": "module8_packages.json",
-      "icon": "📦",
-      "enabled": false
+      "file": "module7_automation.json",
+      "icon": "⏰",
+      "enabled": true,
+      "difficulty": "easy",
+      "estimated_time": "15 minutes"
     }
-  ]
+  ],
+  "total_questions": 20,
+  "total_points": 290,
+  "passing_score": 200,
+  "time_limit_minutes": 240,
+  "exam_info": {
+    "title": "RHCSA Practice Exam",
+    "description": "Comprehensive practice questions covering all RHCSA exam objectives",
+    "prerequisites": [
+      "Basic Linux command line knowledge",
+      "Understanding of system administration concepts",
+      "Access to RHEL/Rocky/AlmaLinux system"
+    ],
+    "exam_tips": [
+      "Read each question carefully",
+      "Use man pages for command syntax",
+      "Verify your work before checking answers",
+      "Time management is crucial in real exam"
+    ]
+  }
 }
