@@ -1,0 +1,148 @@
+{
+  "module_id": "module1",
+  "module_name": "User & Group Management",
+  "description": "Master user creation, group management, and password policies",
+  "questions": [
+    {
+      "question_id": "Q1",
+      "title": "Create User with Specific UID and Shell",
+      "category": "User Management",
+      "difficulty": "easy",
+      "difficulty_stars": "⭐",
+      "points": 10,
+      "time_limit": 300,
+      "description": "Create a new user named 'haris' with UID 1050 and default shell /bin/sh.",
+      "requirements": [
+        {
+          "id": "username",
+          "text": "Username: haris",
+          "check_key": "username"
+        },
+        {
+          "id": "uid",
+          "text": "UID: 1050",
+          "check_key": "uid"
+        },
+        {
+          "id": "shell",
+          "text": "Default shell: /bin/sh",
+          "check_key": "shell"
+        },
+        {
+          "id": "home",
+          "text": "Home directory exists",
+          "check_key": "home_exists"
+        }
+      ],
+      "hints": [
+        "Use 'useradd' command to create users",
+        "The -u flag specifies the UID",
+        "The -s flag specifies the shell",
+        "Man pages: man useradd",
+        "Verify with: id haris, getent passwd haris"
+      ],
+      "solution_steps": [
+        "sudo useradd -u 1050 -s /bin/sh haris",
+        "id haris",
+        "getent passwd haris"
+      ],
+      "validation_script": "validate_q1.sh",
+      "cleanup_script": "userdel -r haris 2>/dev/null || true",
+      "order": 1,
+      "man_pages": ["useradd", "passwd"],
+      "related_commands": ["useradd", "usermod", "userdel", "id", "getent"]
+    },
+    {
+      "question_id": "Q2",
+      "title": "Configure Password Expiration Policy",
+      "category": "User Management",
+      "difficulty": "medium",
+      "difficulty_stars": "⭐⭐",
+      "points": 15,
+      "time_limit": 600,
+      "description": "Set the password of user 'sana' to expire after 30 days and warn 5 days before expiry.",
+      "requirements": [
+        {
+          "id": "user_exists",
+          "text": "User 'sana' exists",
+          "check_key": "user_exists"
+        },
+        {
+          "id": "max_days",
+          "text": "Password max age: 30 days",
+          "check_key": "max_days"
+        },
+        {
+          "id": "warn_days",
+          "text": "Warning period: 5 days",
+          "check_key": "warn_days"
+        }
+      ],
+      "hints": [
+        "User 'sana' should already exist (created during setup)",
+        "Use 'chage' command to manage password aging",
+        "The -M flag sets maximum password age",
+        "The -W flag sets warning days",
+        "Verify with: chage -l sana",
+        "Man pages: man chage"
+      ],
+      "solution_steps": [
+        "sudo chage -M 30 sana",
+        "sudo chage -W 5 sana",
+        "sudo chage -l sana"
+      ],
+      "validation_script": "validate_q2.sh",
+      "cleanup_script": "chage -M 99999 -W 7 sana 2>/dev/null || true",
+      "order": 2,
+      "man_pages": ["chage", "passwd"],
+      "related_commands": ["chage", "passwd", "usermod"]
+    },
+    {
+      "question_id": "Q3",
+      "title": "Create Group and Add Secondary Member",
+      "category": "Group Management",
+      "difficulty": "medium",
+      "difficulty_stars": "⭐⭐",
+      "points": 15,
+      "time_limit": 600,
+      "description": "Create a new group 'devops' and add user 'akram' as a secondary member of it.",
+      "requirements": [
+        {
+          "id": "group_exists",
+          "text": "Group 'devops' exists",
+          "check_key": "group_exists"
+        },
+        {
+          "id": "user_in_group",
+          "text": "User 'akram' is member of 'devops'",
+          "check_key": "user_in_group"
+        },
+        {
+          "id": "secondary_group",
+          "text": "'devops' is secondary group (not primary)",
+          "check_key": "is_secondary"
+        }
+      ],
+      "hints": [
+        "User 'akram' should already exist (created during setup)",
+        "First create the group with 'groupadd'",
+        "Then add user to group with 'usermod -aG'",
+        "The -a flag appends (keeps existing groups)",
+        "The -G flag specifies supplementary groups",
+        "Verify with: groups akram, id akram",
+        "Man pages: man groupadd, man usermod"
+      ],
+      "solution_steps": [
+        "sudo groupadd devops",
+        "sudo usermod -aG devops akram",
+        "groups akram",
+        "id akram"
+      ],
+      "validation_script": "validate_q3.sh",
+      "cleanup_script": "gpasswd -d akram devops 2>/dev/null || true; groupdel devops 2>/dev/null || true",
+      "order": 3,
+      "man_pages": ["groupadd", "usermod", "gpasswd", "groups"],
+      "related_commands": ["groupadd", "groupdel", "groupmod", "usermod", "gpasswd", "groups", "id"]
+    }
+  ]
+}
