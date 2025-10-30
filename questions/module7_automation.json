@@ -1,0 +1,55 @@
+{
+  "module_id": "module7",
+  "module_name": "Task Automation",
+  "description": "Master cron jobs, scheduled tasks, and automation",
+  "questions": [
+    {
+      "question_id": "Q12",
+      "title": "Create Cron Job for User",
+      "category": "Task Scheduling",
+      "difficulty": "easy",
+      "difficulty_stars": "⭐",
+      "points": 10,
+      "time_limit": 600,
+      "description": "Create a cron job for user 'dev' that runs the script /home/dev/cleanup.sh every day at 2:30 AM.",
+      "requirements": [
+        {
+          "id": "cron_exists",
+          "text": "Cron job created for user dev",
+          "check_key": "crontab_exists"
+        },
+        {
+          "id": "correct_time",
+          "text": "Scheduled for 2:30 AM daily",
+          "check_key": "correct_schedule"
+        },
+        {
+          "id": "correct_script",
+          "text": "Script path is /home/dev/cleanup.sh",
+          "check_key": "correct_script"
+        }
+      ],
+      "hints": [
+        "User 'dev' and script already exist (created during setup)",
+        "Edit cron: crontab -e -u dev",
+        "Or: sudo -u dev crontab -e",
+        "Cron format: MIN HOUR DAY MONTH WEEKDAY COMMAND",
+        "For 2:30 AM daily: 30 2 * * *",
+        "Full entry: 30 2 * * * /home/dev/cleanup.sh",
+        "Verify: crontab -l -u dev",
+        "Ensure crond is running: systemctl status crond",
+        "Man pages: man crontab, man 5 crontab"
+      ],
+      "solution_steps": [
+        "echo '30 2 * * * /home/dev/cleanup.sh' | sudo crontab -u dev -",
+        "sudo crontab -l -u dev",
+        "sudo systemctl status crond"
+      ],
+      "validation_script": "validate_q12.sh",
+      "cleanup_script": "crontab -r -u dev 2>/dev/null || true",
+      "order": 1,
+      "man_pages": ["crontab", "cron", "crond"],
+      "related_commands": ["crontab", "systemctl", "at", "anacron"]
+    }
+  ]
+}
