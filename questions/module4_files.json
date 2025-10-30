@@ -1,0 +1,192 @@
+{
+  "module_id": "module4",
+  "module_name": "File Operations & Permissions",
+  "description": "Master file permissions, ownership, archiving, and find operations",
+  "questions": [
+    {
+      "question_id": "Q8",
+      "title": "Create File with Specific Permissions",
+      "category": "File Permissions",
+      "difficulty": "easy",
+      "difficulty_stars": "⭐",
+      "points": 10,
+      "time_limit": 300,
+      "description": "Create a new file /root/secure.log that can only be read and written by the root user.",
+      "requirements": [
+        {
+          "id": "file_exists",
+          "text": "File /root/secure.log exists",
+          "check_key": "file_exists"
+        },
+        {
+          "id": "owner",
+          "text": "Owned by root:root",
+          "check_key": "correct_owner"
+        },
+        {
+          "id": "permissions",
+          "text": "Permissions are 600 (rw-------)",
+          "check_key": "correct_perms"
+        }
+      ],
+      "hints": [
+        "Create file: touch /root/secure.log",
+        "Set permissions: chmod 600 /root/secure.log",
+        "Ensure owner is root: chown root:root /root/secure.log",
+        "600 means: owner=rw, group=nothing, others=nothing",
+        "Verify with: ls -l /root/secure.log",
+        "Man pages: man chmod, man chown"
+      ],
+      "solution_steps": [
+        "sudo touch /root/secure.log",
+        "sudo chmod 600 /root/secure.log",
+        "sudo chown root:root /root/secure.log",
+        "ls -l /root/secure.log"
+      ],
+      "validation_script": "validate_q8.sh",
+      "cleanup_script": "rm -f /root/secure.log 2>/dev/null || true",
+      "order": 1,
+      "man_pages": ["chmod", "chown", "touch"],
+      "related_commands": ["touch", "chmod", "chown", "chgrp", "ls"]
+    },
+    {
+      "question_id": "Q9",
+      "title": "Archive and Compress Directory",
+      "category": "File Archiving",
+      "difficulty": "easy",
+      "difficulty_stars": "⭐",
+      "points": 10,
+      "time_limit": 300,
+      "description": "Archive and compress the directory /var/log into /root/logs_backup.tar.gz.",
+      "requirements": [
+        {
+          "id": "archive_exists",
+          "text": "Archive /root/logs_backup.tar.gz exists",
+          "check_key": "archive_exists"
+        },
+        {
+          "id": "is_compressed",
+          "text": "Archive is gzip compressed",
+          "check_key": "is_gzipped"
+        },
+        {
+          "id": "contains_logs",
+          "text": "Archive contains log files",
+          "check_key": "has_content"
+        }
+      ],
+      "hints": [
+        "Use 'tar' command for archiving",
+        "Flags: -c (create), -z (gzip), -f (file)",
+        "Command: tar -czf /root/logs_backup.tar.gz /var/log",
+        "May see warnings about absolute paths (normal)",
+        "Verify with: tar -tzf /root/logs_backup.tar.gz | head",
+        "Man pages: man tar"
+      ],
+      "solution_steps": [
+        "sudo tar -czf /root/logs_backup.tar.gz /var/log",
+        "ls -lh /root/logs_backup.tar.gz",
+        "tar -tzf /root/logs_backup.tar.gz | head -20"
+      ],
+      "validation_script": "validate_q9.sh",
+      "cleanup_script": "rm -f /root/logs_backup.tar.gz 2>/dev/null || true",
+      "order": 2,
+      "man_pages": ["tar", "gzip"],
+      "related_commands": ["tar", "gzip", "gunzip", "zip", "unzip"]
+    },
+    {
+      "question_id": "Q14",
+      "title": "Find and Change File Ownership",
+      "category": "File Search",
+      "difficulty": "medium",
+      "difficulty_stars": "⭐⭐",
+      "points": 15,
+      "time_limit": 600,
+      "description": "Find all files owned by the 'sales' group under /data and change their ownership to the group 'finance'.",
+      "requirements": [
+        {
+          "id": "files_found",
+          "text": "Files with sales group identified",
+          "check_key": "found_files"
+        },
+        {
+          "id": "ownership_changed",
+          "text": "Group changed to finance",
+          "check_key": "changed_to_finance"
+        },
+        {
+          "id": "no_sales_files",
+          "text": "No files owned by sales remain",
+          "check_key": "no_sales_left"
+        }
+      ],
+      "hints": [
+        "Use 'find' command to search files",
+        "Find by group: find /data -group sales",
+        "Change group: chgrp finance filename",
+        "Combine: find /data -group sales -exec chgrp finance {} \\;",
+        "Or: find /data -group sales | xargs chgrp finance",
+        "Verify: ls -l /data",
+        "Man pages: man find, man chgrp, man xargs"
+      ],
+      "solution_steps": [
+        "find /data -group sales",
+        "sudo find /data -group sales -exec chgrp finance {} \\;",
+        "ls -l /data"
+      ],
+      "validation_script": "validate_q14.sh",
+      "cleanup_script": "find /data -group finance -exec chgrp sales {} \\; 2>/dev/null || true",
+      "order": 3,
+      "man_pages": ["find", "chgrp", "xargs"],
+      "related_commands": ["find", "chgrp", "chown", "xargs"]
+    },
+    {
+      "question_id": "Q19",
+      "title": "Set Default File Creation Mask",
+      "category": "File Permissions",
+      "difficulty": "medium",
+      "difficulty_stars": "⭐⭐",
+      "points": 15,
+      "time_limit": 600,
+      "description": "Set the default file creation mask (umask) for all users to 027.",
+      "requirements": [
+        {
+          "id": "umask_set",
+          "text": "Umask 027 configured globally",
+          "check_key": "umask_configured"
+        },
+        {
+          "id": "persistent",
+          "text": "Configuration is persistent",
+          "check_key": "is_persistent"
+        },
+        {
+          "id": "new_file_perms",
+          "text": "New files have correct permissions",
+          "check_key": "file_perms_correct"
+        }
+      ],
+      "hints": [
+        "Umask 027 means: owner=full, group=read/execute, others=nothing",
+        "Files created: 640 (666-027), Dirs created: 750 (777-027)",
+        "Configure in /etc/profile or /etc/bashrc",
+        "Add line: umask 027",
+        "Or edit /etc/profile.d/umask.sh",
+        "Test: touch /tmp/testfile; ls -l /tmp/testfile",
+        "Man pages: man umask, man bash"
+      ],
+      "solution_steps": [
+        "echo 'umask 027' | sudo tee /etc/profile.d/umask.sh",
+        "sudo chmod 644 /etc/profile.d/umask.sh",
+        "source /etc/profile.d/umask.sh",
+        "umask",
+        "touch /tmp/test; ls -l /tmp/test"
+      ],
+      "validation_script": "validate_q19.sh",
+      "cleanup_script": "rm -f /etc/profile.d/umask.sh 2>/dev/null || true",
+      "order": 4,
+      "man_pages": ["umask", "bash"],
+      "related_commands": ["umask", "chmod"]
+    }
+  ]
+}
