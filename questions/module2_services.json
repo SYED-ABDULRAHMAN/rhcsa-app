@@ -1,0 +1,92 @@
+{
+  "module_id": "module2",
+  "module_name": "System Services & Boot",
+  "description": "Manage system targets, services, and time synchronization",
+  "questions": [
+    {
+      "question_id": "Q4",
+      "title": "Set Default System Target",
+      "category": "System Boot",
+      "difficulty": "easy",
+      "difficulty_stars": "⭐",
+      "points": 10,
+      "time_limit": 300,
+      "description": "Configure the system so that the default target is 'multi-user.target'.",
+      "requirements": [
+        {
+          "id": "default_target",
+          "text": "Default target is multi-user.target",
+          "check_key": "default_target"
+        },
+        {
+          "id": "persistent",
+          "text": "Configuration is persistent",
+          "check_key": "is_persistent"
+        }
+      ],
+      "hints": [
+        "Use 'systemctl' to manage system targets",
+        "The 'set-default' subcommand sets the default target",
+        "Verify with: systemctl get-default",
+        "Man pages: man systemctl, man systemd.target",
+        "This survives reboots automatically"
+      ],
+      "solution_steps": [
+        "sudo systemctl set-default multi-user.target",
+        "systemctl get-default"
+      ],
+      "validation_script": "validate_q4.sh",
+      "cleanup_script": "systemctl set-default graphical.target 2>/dev/null || true",
+      "order": 1,
+      "man_pages": ["systemctl", "systemd.target"],
+      "related_commands": ["systemctl", "systemd"]
+    },
+    {
+      "question_id": "Q7",
+      "title": "Configure NTP Time Synchronization",
+      "category": "Time Services",
+      "difficulty": "medium",
+      "difficulty_stars": "⭐⭐",
+      "points": 15,
+      "time_limit": 900,
+      "description": "Configure an NTP client to synchronize time with the server 'time.example.net'.",
+      "requirements": [
+        {
+          "id": "chrony_running",
+          "text": "Chrony service is running",
+          "check_key": "service_running"
+        },
+        {
+          "id": "chrony_enabled",
+          "text": "Chrony service is enabled",
+          "check_key": "service_enabled"
+        },
+        {
+          "id": "ntp_server",
+          "text": "NTP server 'time.example.net' configured",
+          "check_key": "server_configured"
+        }
+      ],
+      "hints": [
+        "RHEL uses 'chrony' for NTP (not ntpd)",
+        "Edit /etc/chrony.conf to add time servers",
+        "Add line: server time.example.net iburst",
+        "Restart chrony: systemctl restart chronyd",
+        "Enable on boot: systemctl enable chronyd",
+        "Verify with: chronyc sources",
+        "Man pages: man chrony.conf, man chronyd"
+      ],
+      "solution_steps": [
+        "sudo bash -c 'echo \"server time.example.net iburst\" >> /etc/chrony.conf'",
+        "sudo systemctl enable chronyd",
+        "sudo systemctl restart chronyd",
+        "chronyc sources"
+      ],
+      "validation_script": "validate_q7.sh",
+      "cleanup_script": "sed -i '/time.example.net/d' /etc/chrony.conf 2>/dev/null; systemctl restart chronyd 2>/dev/null || true",
+      "order": 2,
+      "man_pages": ["chrony.conf", "chronyd", "chronyc"],
+      "related_commands": ["chronyd", "chronyc", "systemctl", "timedatectl"]
+    }
+  ]
+}
