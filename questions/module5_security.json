@@ -1,0 +1,158 @@
+"#   1. Interrupt GRUB (press 'e')",
+        "#   2. Add 'rd.break' to kernel line",
+        "#   3. Boot with Ctrl+X",
+        "#   4. mount -o remount,rw /sysroot",
+        "#   5. chroot /sysroot",
+        "#   6. passwd root",
+        "#   7. touch /.autorelabel (SELinux)",
+        "#   8. exit twice and reboot"
+      ],
+      "validation_script": "validate_q20.sh",
+      "cleanup_script": "# No cleanup needed - documentation only",
+      "order": 3,
+      "man_pages": ["grub2", "passwd", "chroot"],
+      "related_commands": ["grub2-mkconfig", "passwd", "chroot", "mount"],
+      "is_documentation_only": true
+    }
+  ]
+}
+{
+  "module_id": "module5",
+  "module_name": "SELinux & Security",
+  "description": "Master SELinux contexts, access control, and security policies",
+  "questions": [
+    {
+      "question_id": "Q10",
+      "title": "Configure SELinux Context for Apache",
+      "category": "SELinux",
+      "difficulty": "hard",
+      "difficulty_stars": "⭐⭐⭐",
+      "points": 20,
+      "time_limit": 900,
+      "description": "Set the SELinux context of /webfiles so that Apache can serve files from it.",
+      "requirements": [
+        {
+          "id": "selinux_enforcing",
+          "text": "SELinux is in enforcing mode",
+          "check_key": "selinux_enforcing"
+        },
+        {
+          "id": "correct_context",
+          "text": "Directory has httpd_sys_content_t context",
+          "check_key": "correct_context"
+        },
+        {
+          "id": "persistent",
+          "text": "Context persists (semanage used)",
+          "check_key": "is_persistent"
+        },
+        {
+          "id": "apache_can_read",
+          "text": "Apache can access files",
+          "check_key": "apache_access"
+        }
+      ],
+      "hints": [
+        "Directory /webfiles already exists (created during setup)",
+        "Check current context: ls -Z /webfiles",
+        "Set context: semanage fcontext -a -t httpd_sys_content_t '/webfiles(/.*)?'",
+        "Apply context: restorecon -Rv /webfiles",
+        "Or use chcon (temporary): chcon -R -t httpd_sys_content_t /webfiles",
+        "Verify: ls -Z /webfiles",
+        "Test: sudo -u apache cat /webfiles/index.html",
+        "Man pages: man semanage, man restorecon, man chcon"
+      ],
+      "solution_steps": [
+        "sudo semanage fcontext -a -t httpd_sys_content_t '/webfiles(/.*)?'",
+        "sudo restorecon -Rv /webfiles",
+        "ls -Z /webfiles",
+        "sudo -u apache cat /webfiles/index.html"
+      ],
+      "validation_script": "validate_q10.sh",
+      "cleanup_script": "semanage fcontext -d '/webfiles(/.*)?'  2>/dev/null || true; restorecon -Rv /webfiles 2>/dev/null || true",
+      "order": 1,
+      "man_pages": ["semanage", "restorecon", "chcon", "selinux"],
+      "related_commands": ["semanage", "restorecon", "chcon", "getenforce", "setenforce", "ls"]
+    },
+    {
+      "question_id": "Q13",
+      "title": "Restrict SSH Access for User",
+      "category": "Access Control",
+      "difficulty": "medium",
+      "difficulty_stars": "⭐⭐",
+      "points": 15,
+      "time_limit": 600,
+      "description": "Restrict the 'testuser' account so that it cannot log in via SSH.",
+      "requirements": [
+        {
+          "id": "user_exists",
+          "text": "User testuser exists",
+          "check_key": "user_exists"
+        },
+        {
+          "id": "ssh_denied",
+          "text": "SSH login is disabled",
+          "check_key": "ssh_disabled"
+        },
+        {
+          "id": "shell_access",
+          "text": "Shell is set to /sbin/nologin",
+          "check_key": "nologin_shell"
+        }
+      ],
+      "hints": [
+        "User 'testuser' should already exist (created during setup)",
+        "Method 1: Change shell to /sbin/nologin",
+        "  usermod -s /sbin/nologin testuser",
+        "Method 2: Add to /etc/ssh/sshd_config",
+        "  DenyUsers testuser",
+        "  systemctl restart sshd",
+        "Method 1 is simpler and recommended",
+        "Verify: getent passwd testuser",
+        "Man pages: man usermod, man sshd_config"
+      ],
+      "solution_steps": [
+        "sudo usermod -s /sbin/nologin testuser",
+        "getent passwd testuser"
+      ],
+      "validation_script": "validate_q13.sh",
+      "cleanup_script": "usermod -s /bin/bash testuser 2>/dev/null || true",
+      "order": 2,
+      "man_pages": ["usermod", "sshd_config", "nologin"],
+      "related_commands": ["usermod", "getent", "systemctl"]
+    },
+    {
+      "question_id": "Q20",
+      "title": "Reset Root Password via GRUB (Documentation)",
+      "category": "System Recovery",
+      "difficulty": "hard",
+      "difficulty_stars": "⭐⭐⭐",
+      "points": 20,
+      "time_limit": 900,
+      "description": "Document the process to reset the root password by booting into the GRUB rescue environment and changing it. Note: This question requires documentation of the process, not actual execution.",
+      "requirements": [
+        {
+          "id": "documentation",
+          "text": "Process documented correctly",
+          "check_key": "process_documented"
+        }
+      ],
+      "hints": [
+        "⚠️ This is a DOCUMENTATION question (cannot test without reboot)",
+        "Process:",
+        "1. Reboot system and interrupt GRUB (press 'e')",
+        "2. Find linux/linux16/linuxefi line",
+        "3. Add 'rd.break' to end of line",
+        "4. Press Ctrl+X to boot",
+        "5. At switch_root prompt: mount -o remount,rw /sysroot",
+        "6. chroot /sysroot",
+        "7. passwd root",
+        "8. touch /.autorelabel",
+        "9. exit, exit, system will reboot",
+        "Man pages: man grub2, man passwd"
+      ],
+      "solution_steps": [
+        "# This is a documentation-only question",
+        "# Process documented in hints section",
+        "# Key steps:",
+        "#   1. Interrupt GRUB
