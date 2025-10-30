@@ -1,0 +1,169 @@
+{
+  "module_id": "module6",
+  "module_name": "Networking",
+  "description": "Master network configuration, NFS, and firewall management",
+  "questions": [
+    {
+      "question_id": "Q11",
+      "title": "Configure Static IP Address",
+      "category": "Network Configuration",
+      "difficulty": "medium",
+      "difficulty_stars": "⭐⭐",
+      "points": 15,
+      "time_limit": 900,
+      "description": "Configure a static IP address 192.168.1.50/24 with gateway 192.168.1.1 on the interface dummy0. ⚠️ Use dummy0 to avoid breaking SSH connection!",
+      "requirements": [
+        {
+          "id": "interface_configured",
+          "text": "Interface dummy0 configured",
+          "check_key": "interface_exists"
+        },
+        {
+          "id": "static_ip",
+          "text": "IP address is 192.168.1.50/24",
+          "check_key": "correct_ip"
+        },
+        {
+          "id": "gateway",
+          "text": "Gateway is 192.168.1.1",
+          "check_key": "correct_gateway"
+        },
+        {
+          "id": "persistent",
+          "text": "Configuration is persistent",
+          "check_key": "is_persistent"
+        }
+      ],
+      "hints": [
+        "⚠️ Use 'dummy0' interface (not eth0) to avoid SSH lockout!",
+        "dummy0 interface already created during setup",
+        "Use 'nmcli' (NetworkManager CLI) to configure",
+        "Create connection: nmcli con add type ethernet ifname dummy0 con-name static-dummy0",
+        "Set IP: nmcli con mod static-dummy0 ipv4.addresses 192.168.1.50/24",
+        "Set gateway: nmcli con mod static-dummy0 ipv4.gateway 192.168.1.1",
+        "Set method: nmcli con mod static-dummy0 ipv4.method manual",
+        "Activate: nmcli con up static-dummy0",
+        "Verify: ip addr show dummy0",
+        "Man pages: man nmcli, man nmcli-examples"
+      ],
+      "solution_steps": [
+        "sudo nmcli con add type ethernet ifname dummy0 con-name static-dummy0",
+        "sudo nmcli con mod static-dummy0 ipv4.addresses 192.168.1.50/24",
+        "sudo nmcli con mod static-dummy0 ipv4.gateway 192.168.1.1",
+        "sudo nmcli con mod static-dummy0 ipv4.method manual",
+        "sudo nmcli con up static-dummy0",
+        "ip addr show dummy0"
+      ],
+      "validation_script": "validate_q11.sh",
+      "cleanup_script": "nmcli con delete static-dummy0 2>/dev/null || true",
+      "order": 1,
+      "man_pages": ["nmcli", "nmcli-examples", "ip"],
+      "related_commands": ["nmcli", "ip", "ifconfig", "route"]
+    },
+    {
+      "question_id": "Q15",
+      "title": "Configure Automatic NFS Mount",
+      "category": "NFS",
+      "difficulty": "medium",
+      "difficulty_stars": "⭐⭐",
+      "points": 15,
+      "time_limit": 900,
+      "description": "Configure the system to automatically mount a remote NFS share 'server:/exports/share' to /mnt/nfsshare on boot. Note: Use 'localhost:/exports/share' in this lab environment.",
+      "requirements": [
+        {
+          "id": "nfs_mounted",
+          "text": "NFS share is mounted at /mnt/nfsshare",
+          "check_key": "is_mounted"
+        },
+        {
+          "id": "persistent",
+          "text": "Entry in /etc/fstab",
+          "check_key": "in_fstab"
+        },
+        {
+          "id": "can_access",
+          "text": "Can access files in mount",
+          "check_key": "access_works"
+        }
+      ],
+      "hints": [
+        "NFS server is already running on localhost (setup script)",
+        "Export path: /exports/share",
+        "Mount point already exists: /mnt/nfsshare",
+        "Use 'localhost:/exports/share' or '127.0.0.1:/exports/share'",
+        "In real exam, use: server:/exports/share",
+        "Add to /etc/fstab:",
+        "  localhost:/exports/share /mnt/nfsshare nfs defaults 0 0",
+        "Mount: sudo mount -a",
+        "Verify: ls /mnt/nfsshare",
+        "Man pages: man nfs, man fstab, man mount"
+      ],
+      "solution_steps": [
+        "echo 'localhost:/exports/share /mnt/nfsshare nfs defaults 0 0' | sudo tee -a /etc/fstab",
+        "sudo mount -a",
+        "df -h /mnt/nfsshare",
+        "ls -l /mnt/nfsshare"
+      ],
+      "validation_script": "validate_q15.sh",
+      "cleanup_script": "umount /mnt/nfsshare 2>/dev/null || true; sed -i '/\\/mnt\\/nfsshare/d' /etc/fstab 2>/dev/null || true",
+      "order": 2,
+      "man_pages": ["nfs", "fstab", "mount", "showmount"],
+      "related_commands": ["mount", "umount", "showmount", "exportfs"]
+    },
+    {
+      "question_id": "Q17",
+      "title": "Configure Firewall Rules",
+      "category": "Firewall",
+      "difficulty": "medium",
+      "difficulty_stars": "⭐⭐",
+      "points": 15,
+      "time_limit": 600,
+      "description": "Configure the firewall to allow only SSH (port 22) and HTTP (port 80) traffic. ⚠️ System has auto-restore if SSH breaks!",
+      "requirements": [
+        {
+          "id": "firewall_running",
+          "text": "Firewalld is running",
+          "check_key": "firewall_active"
+        },
+        {
+          "id": "ssh_allowed",
+          "text": "SSH service is allowed",
+          "check_key": "ssh_allowed"
+        },
+        {
+          "id": "http_allowed",
+          "text": "HTTP service is allowed",
+          "check_key": "http_allowed"
+        },
+        {
+          "id": "persistent",
+          "text": "Configuration is persistent",
+          "check_key": "is_permanent"
+        }
+      ],
+      "hints": [
+        "⚠️ Be careful - wrong config can lock you out!",
+        "System has auto-restore backup in /root/firewall-backup/",
+        "Check default zone: firewall-cmd --get-default-zone",
+        "Add services permanently:",
+        "  firewall-cmd --permanent --add-service=ssh",
+        "  firewall-cmd --permanent --add-service=http",
+        "Remove other services if needed",
+        "Reload: firewall-cmd --reload",
+        "Verify: firewall-cmd --list-all",
+        "Man pages: man firewalld, man firewall-cmd"
+      ],
+      "solution_steps": [
+        "sudo firewall-cmd --permanent --add-service=ssh",
+        "sudo firewall-cmd --permanent --add-service=http",
+        "sudo firewall-cmd --reload",
+        "sudo firewall-cmd --list-all"
+      ],
+      "validation_script": "validate_q17.sh",
+      "cleanup_script": "firewall-cmd --permanent --remove-service=http 2>/dev/null || true; firewall-cmd --reload 2>/dev/null || true",
+      "order": 3,
+      "man_pages": ["firewalld", "firewall-cmd"],
+      "related_commands": ["firewall-cmd", "systemctl", "ss", "netstat"]
+    }
+  ]
+}
