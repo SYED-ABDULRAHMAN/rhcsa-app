@@ -1,0 +1,233 @@
+{
+  "module_id": "module3",
+  "module_name": "Storage Management",
+  "description": "Master partitions, filesystems, LVM, and swap configuration",
+  "questions": [
+    {
+      "question_id": "Q5",
+      "title": "Create Partition and Mount Filesystem",
+      "category": "Storage",
+      "difficulty": "medium",
+      "difficulty_stars": "⭐⭐",
+      "points": 15,
+      "time_limit": 900,
+      "description": "Create a 500MB partition on /dev/sdb, format it with xfs, and mount it persistently at /mnt/data.",
+      "requirements": [
+        {
+          "id": "partition_exists",
+          "text": "Partition created on /dev/sdb",
+          "check_key": "partition_exists"
+        },
+        {
+          "id": "filesystem",
+          "text": "Filesystem is XFS",
+          "check_key": "is_xfs"
+        },
+        {
+          "id": "mounted",
+          "text": "Mounted at /mnt/data",
+          "check_key": "is_mounted"
+        },
+        {
+          "id": "persistent",
+          "text": "Entry in /etc/fstab",
+          "check_key": "in_fstab"
+        }
+      ],
+      "hints": [
+        "Use 'fdisk' or 'parted' to create partition",
+        "Partition size should be ~500MB",
+        "Format with: mkfs.xfs /dev/sdb1",
+        "Mount point already exists: /mnt/data",
+        "Add to /etc/fstab for persistence",
+        "Use UUID or device name in fstab",
+        "Get UUID with: blkid /dev/sdb1",
+        "Man pages: man fdisk, man mkfs.xfs, man fstab"
+      ],
+      "solution_steps": [
+        "sudo fdisk /dev/sdb",
+        "  # Press: n, p, 1, Enter, +500M, w",
+        "sudo mkfs.xfs /dev/sdb1",
+        "UUID=$(sudo blkid -s UUID -o value /dev/sdb1)",
+        "echo \"UUID=$UUID /mnt/data xfs defaults 0 0\" | sudo tee -a /etc/fstab",
+        "sudo mount -a",
+        "df -h /mnt/data"
+      ],
+      "validation_script": "validate_q5.sh",
+      "cleanup_script": "umount /mnt/data 2>/dev/null || true; sed -i '/\\/mnt\\/data/d' /etc/fstab 2>/dev/null || true; wipefs -a /dev/sdb 2>/dev/null || true",
+      "order": 1,
+      "man_pages": ["fdisk", "parted", "mkfs.xfs", "mount", "fstab"],
+      "related_commands": ["fdisk", "parted", "mkfs.xfs", "mount", "umount", "blkid", "lsblk"]
+    },
+    {
+      "question_id": "Q6",
+      "title": "Create LVM Logical Volume",
+      "category": "LVM",
+      "difficulty": "hard",
+      "difficulty_stars": "⭐⭐⭐",
+      "points": 20,
+      "time_limit": 1200,
+      "description": "Create a logical volume named 'backup_lv' of size 1G inside volume group 'storage_vg' and mount it on /backup.",
+      "requirements": [
+        {
+          "id": "vg_exists",
+          "text": "Volume group 'storage_vg' exists",
+          "check_key": "vg_exists"
+        },
+        {
+          "id": "lv_exists",
+          "text": "Logical volume 'backup_lv' exists",
+          "check_key": "lv_exists"
+        },
+        {
+          "id": "lv_size",
+          "text": "LV size is 1GB",
+          "check_key": "lv_size"
+        },
+        {
+          "id": "filesystem",
+          "text": "Filesystem created on LV",
+          "check_key": "has_filesystem"
+        },
+        {
+          "id": "mounted",
+          "text": "Mounted at /backup",
+          "check_key": "is_mounted"
+        },
+        {
+          "id": "persistent",
+          "text": "Entry in /etc/fstab",
+          "check_key": "in_fstab"
+        }
+      ],
+      "hints": [
+        "First create physical volume: pvcreate /dev/sdb2",
+        "Create volume group: vgcreate storage_vg /dev/sdb2",
+        "Create logical volume: lvcreate -L 1G -n backup_lv storage_vg",
+        "Format: mkfs.xfs /dev/storage_vg/backup_lv",
+        "Mount directory already exists: /backup",
+        "Add to /etc/fstab for persistence",
+        "Man pages: man lvm, man pvcreate, man vgcreate, man lvcreate"
+      ],
+      "solution_steps": [
+        "sudo fdisk /dev/sdb",
+        "  # Create partition sdb2 (1.5GB, type 8e)",
+        "sudo pvcreate /dev/sdb2",
+        "sudo vgcreate storage_vg /dev/sdb2",
+        "sudo lvcreate -L 1G -n backup_lv storage_vg",
+        "sudo mkfs.xfs /dev/storage_vg/backup_lv",
+        "echo \"/dev/storage_vg/backup_lv /backup xfs defaults 0 0\" | sudo tee -a /etc/fstab",
+        "sudo mount -a",
+        "df -h /backup"
+      ],
+      "validation_script": "validate_q6.sh",
+      "cleanup_script": "umount /backup 2>/dev/null || true; sed -i '/\\/backup/d' /etc/fstab 2>/dev/null || true; lvremove -f /dev/storage_vg/backup_lv 2>/dev/null || true; vgremove -f storage_vg 2>/dev/null || true; pvremove /dev/sdb2 2>/dev/null || true",
+      "order": 2,
+      "man_pages": ["lvm", "pvcreate", "vgcreate", "lvcreate", "lvdisplay"],
+      "related_commands": ["pvcreate", "vgcreate", "lvcreate", "lvdisplay", "vgdisplay", "pvdisplay"]
+    },
+    {
+      "question_id": "Q16",
+      "title": "Create Swap File",
+      "category": "Swap",
+      "difficulty": "medium",
+      "difficulty_stars": "⭐⭐",
+      "points": 15,
+      "time_limit": 600,
+      "description": "Create a swap file of size 2GB and make it permanent across reboots.",
+      "requirements": [
+        {
+          "id": "swapfile_exists",
+          "text": "Swap file exists",
+          "check_key": "file_exists"
+        },
+        {
+          "id": "swapfile_size",
+          "text": "Size is approximately 2GB",
+          "check_key": "correct_size"
+        },
+        {
+          "id": "swap_active",
+          "text": "Swap is active",
+          "check_key": "is_active"
+        },
+        {
+          "id": "persistent",
+          "text": "Entry in /etc/fstab",
+          "check_key": "in_fstab"
+        }
+      ],
+      "hints": [
+        "Use 'dd' or 'fallocate' to create file",
+        "Typical location: /swapfile or /var/swap",
+        "Set permissions: chmod 600 /swapfile",
+        "Format as swap: mkswap /swapfile",
+        "Activate: swapon /swapfile",
+        "Add to /etc/fstab: /swapfile none swap defaults 0 0",
+        "Verify with: swapon --show",
+        "Man pages: man dd, man mkswap, man swapon"
+      ],
+      "solution_steps": [
+        "sudo dd if=/dev/zero of=/swapfile bs=1M count=2048",
+        "sudo chmod 600 /swapfile",
+        "sudo mkswap /swapfile",
+        "sudo swapon /swapfile",
+        "echo \"/swapfile none swap defaults 0 0\" | sudo tee -a /etc/fstab",
+        "swapon --show"
+      ],
+      "validation_script": "validate_q16.sh",
+      "cleanup_script": "swapoff /swapfile 2>/dev/null || true; sed -i '/swapfile/d' /etc/fstab 2>/dev/null || true; rm -f /swapfile 2>/dev/null || true",
+      "order": 3,
+      "man_pages": ["dd", "mkswap", "swapon", "fstab"],
+      "related_commands": ["dd", "fallocate", "mkswap", "swapon", "swapoff"]
+    },
+    {
+      "question_id": "Q18",
+      "title": "Extend Logical Volume",
+      "category": "LVM",
+      "difficulty": "hard",
+      "difficulty_stars": "⭐⭐⭐",
+      "points": 20,
+      "time_limit": 900,
+      "description": "Extend the existing logical volume /dev/mapper/storage_vg-backup_lv by 500MB and resize the filesystem.",
+      "requirements": [
+        {
+          "id": "lv_extended",
+          "text": "LV extended by 500MB",
+          "check_key": "lv_extended"
+        },
+        {
+          "id": "filesystem_resized",
+          "text": "Filesystem resized",
+          "check_key": "fs_resized"
+        },
+        {
+          "id": "no_data_loss",
+          "text": "No data loss",
+          "check_key": "data_intact"
+        }
+      ],
+      "hints": [
+        "⚠️ Prerequisite: Complete Q6 first (creates the LV)",
+        "Extend LV: lvextend -L +500M /dev/storage_vg/backup_lv",
+        "Or: lvextend -r -L +500M (auto-resize filesystem)",
+        "For XFS: xfs_growfs /backup",
+        "For ext4: resize2fs /dev/storage_vg/backup_lv",
+        "Verify with: df -h /backup, lvdisplay",
+        "Man pages: man lvextend, man xfs_growfs"
+      ],
+      "solution_steps": [
+        "sudo lvextend -L +500M /dev/storage_vg/backup_lv",
+        "sudo xfs_growfs /backup",
+        "df -h /backup",
+        "sudo lvdisplay /dev/storage_vg/backup_lv"
+      ],
+      "validation_script": "validate_q18.sh",
+      "cleanup_script": "# No cleanup - this extends existing LV from Q6",
+      "order": 4,
+      "man_pages": ["lvextend", "xfs_growfs", "resize2fs"],
+      "related_commands": ["lvextend", "lvreduce", "xfs_growfs", "resize2fs", "lvdisplay"],
+      "prerequisites": ["Q6"]
+    }
+  ]
+}
